@@ -1,60 +1,67 @@
 <?php
+$emailErr =  $PhoneNoErr= $passErr= "";
+require_once ('db_connect.php');
 
 
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST')
+//if(isset($_POST['regester']))
+{
     $fname = $_POST['first'];
     $Lname = $_POST['last'];
     $email = $_POST['email'];
-    $pasward = $_POST['pas'];
+    $paward = $_POST['pas'];
     $Pnumber = $_POST['number'];
+    $pasward = password_hash($paward, PASSWORD_DEFAULT);
 
 
-    //connection to Database
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "formdb";
 
-    // Create connection
+    //for multiple phone numer
+    $query= mysqli_query($conn, "SELECT * FROM  `formdata` where phone= '$Pnumber'" );
 
-    $conn = mysqli_connect($servername, $username, $password, $database);
-
-// Check connection
-    if (!$conn) {
-        die("Connection failed: ". mysqli_connect_error());
-    }
-    echo "Connected successfully";
-
-    $password = $_POST['pas'];
-
-    $number = preg_match('@[0-9]@', $password);
+        if(mysqli_num_rows($query)>0)
+        {
+            $PhoneNoErr = "Phone# already in use choose another!!" ;
+        }else
+        {
+                //for Multiple Email
+                $querys = mysqli_query($conn, "SELECT * FROM  `formdata` where email= '$email'");
+                if (mysqli_num_rows($querys) > 0) {
+                    $emailErr = " Email already Taken  choose another ";
+                } else
+                {
 
 
-    if (strlen($password) < 6 || !$number) {
-        echo "Password must be at least 6 characters in length and must contain at least one number.";
-    } else {
-        echo "Your password is strong.";
-        $sql = "INSERT INTO `formdata` (`Fname`, `Lname`, `email`, `pasward`, `phone`) VALUES ('$fname', '$Lname', '$email', '$pasward', '$Pnumber')";
-        $result = mysqli_query($conn, $sql);
-        if ($result) {
-            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-              <strong>Success!</strong> Your entry has been submitted successfully!
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>';
-        } else {
-            // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
-            echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <strong>Error!</strong> We are facing some technical issue and your entry ws not submitted successfully! We regret the inconvinience caused!
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>';
-        }
-    }
+
+                        $sql = "INSERT INTO `formdata`(`Fname`, `Lname`, `email`, `pasward`, `phone`) VALUES('$fname', '$Lname', '$email', '$pasward', '$Pnumber')";
+                        $result = mysqli_query($conn, $sql);
+                        if ($result) {
+                            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+                                  <strong>Success!</strong> Your entry has been submitted successfully!
+                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                  </button>
+                                </div>';
+                            header ("location: login.php");
+                        } else
+                        {
+                            // echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
+                            echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                  <strong>Error!</strong> We are facing some technical issue and your entry ws not submitted successfully! We regret the inconvinience caused!
+                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                  </button>
+                                </div>';
+
+                        }
+                    }
+                }
+
+
+
+
+
 
 }
+
 
 ?>
